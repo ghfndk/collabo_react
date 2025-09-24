@@ -14,8 +14,8 @@ function App({ appName, user, handleLogout }) {
             case 'ADMIN':
                 return (
                     <>
-                        <Nav.Link onClick={() => navigate(``)}>상품 등록</Nav.Link>
-                        <Nav.Link onClick={() => navigate(handleLogout)}>로그 아웃</Nav.Link>
+                        <Nav.Link onClick={() => navigate(`/product/insert`)}>상품 등록</Nav.Link>
+                        <Nav.Link onClick={(handleLogout)}>로그 아웃</Nav.Link>
                     </>
                 );
             case 'USER':
@@ -23,7 +23,7 @@ function App({ appName, user, handleLogout }) {
                     <>
                         <Nav.Link onClick={() => navigate(``)}>장바구니</Nav.Link>
                         <Nav.Link onClick={() => navigate(``)}>주문 내역</Nav.Link>
-                        <Nav.Link onClick={() => navigate(handleLogout)}>로그 아웃</Nav.Link>
+                        <Nav.Link onClick={(handleLogout)}>로그 아웃</Nav.Link>
                     </>
                 );
             default:

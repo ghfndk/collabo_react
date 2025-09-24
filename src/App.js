@@ -2,7 +2,7 @@ import './App.css';
 
 // 분리된 리엑트컴포넌트 import
 import MenuItems from './ui/MenuItems';
-import AppRoutes from './routes/AppRoutes'
+import AppRoutes from './routes/AppRoutes';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
