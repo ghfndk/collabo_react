@@ -86,7 +86,7 @@ function App() {
     const ControlChange = (event) => {
         // event는 객체는 chage 이벤트를 발생시킨 폼 컨트롤입니다.
         const { name, value } = event.target;
-        console.log(`값이 바뀐 컨트롤 : ${name}, 값 : ${value}`);
+        // console.log(`값이 바뀐 컨트롤 : ${name}, 값 : ${value}`);
 
         // 전개 연산자를 사용하여 이전 컨트롤러의 값들도 보존하도록 합니다.
         setProduct({ ...product, [name]: value });

@@ -43,7 +43,7 @@ function App() {
     const ControlChange = (event) => {
         // event는 객체는 chage 이벤트를 발생시킨 폼 컨트롤입니다.
         const { name, value } = event.target;
-        console.log(`값이 바뀐 컨트롤 : ${name}, 값 : ${value}`);
+        // console.log(`값이 바뀐 컨트롤 : ${name}, 값 : ${value}`);
 
         // 전개 연산자를 사용하여 이전 컨트롤러의 값들도 보존하도록 합니다.
         setProduct({ ...product, [name]: value });
@@ -64,7 +64,7 @@ function App() {
         // onloadend : 읽기 작업이 성공하면 자동으로 동작하는 이벤트 핸들러 함수
         reader.onloadend = () => {
             const result = reader.result;
-            console.log(result);
+            // console.log(result);
 
             // 해당 이미지는 Base64 인코딩 문자열 형식으로 state에 저장합니다.
             // 사용 예시 : data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...
