@@ -11,9 +11,6 @@ function App({ user }) {
     // 보여 주고자하는 '카트 상품' 배열 정보
     const [cartProducts, setCartProducts] = useState([]);
 
-    // 화면에 보여 주는 주문 총 금액을 위한 스테이트
-    const [orderTotalPrice, setOrderTotallPrice] = useState(0);
-
     const navigate = useNavigate();
 
     // 사용자의 정보가 바뀔 때 화면을 렌더링해주어야 합니다.
@@ -45,100 +42,6 @@ function App({ user }) {
 
     };
 
-    // `전체 선택` 체크 박스를 Toggle 했습니다.
-    const toggleAllCheckBox = (isAllCheck) => {
-        // isAllCheck : `전체 선택` 체크 박스의 boolean 값
-        setCartProducts((previous) => {
-            // 모든 객체(카트 상품)들이 나머지 속성은 보존하고, 체크 상태(checked)를
-            // `전체 선택` 체크 상태와 동일하게 설정합니다.
-            const updatedProducts = previous.map((product) => ({
-                ...product,
-                checked: isAllCheck
-            }));
-
-            // 비동기적 렌더링 문조레 수정된 updatedProducts 항목을 매개 변수로 넘겨야 정상적으로 동작합니다.
-            refreshOrderTotalPrice(updatedProducts);
-
-            return updatedProducts;
-        });
-    };
-
-    // 체크 박스의 상태가 Toggle될 때 마다, 전체 요금을 다시 재계산하는 함수입니다.
-    const refreshOrderTotalPrice = (product) => {
-        let total = 0; // 총 금액 변수
-
-        product.forEach((bean) => {
-            if (bean.checked) { // 선택된 체크 박스에 대하여
-                total += bean.price * bean.quantity; // 총 금액 누적
-            }
-        });
-
-        setOrderTotallPrice(total); // State 업데이트
-    };
-
-    // 개별  체크 박스를 클릭하였습니다.
-    const toggleCheckBox = (cartProductId) => {
-        console.log(`카트 상품 아이디 : ${cartProductId}`);
-
-        setCartProducts((previous) => {
-            // !product.checked는 체크 상태를 toggle 시키는 역할을 합니다.
-            const updatedProducts = previous.map((product) =>
-                product.cartProductId === cartProductId
-                    ? { ...product, checked: !product.checked }
-                    : product
-            );
-
-            refreshOrderTotalPrice(updatedProducts);
-            return updatedProducts;
-        });
-    };
-
-    // 카트 상품 목록에서 특정 상품의 구매 수량을 변경하였습니다.
-    const changeQuantity = async (cartProductId, quantity) => {
-        // NaN : Not A Number
-        if (isNaN(quantity)) { // 숫자 형식이 아니면
-            // 값을 0으로 변경한 다음. 함수를 반환하도록 합니다.
-            setCartProducts((previous) => {
-                previous.map((product) =>
-                    product.cartProductId === cartProductId
-                        ? { ...product, quantity: 0 }
-                        : product
-                );
-            });
-
-            alert('변경 수량은 최소 1이상이어야 합니다.');
-            return;
-        }
-
-        try {
-            // 사용 예시 : 100번 항목을 10개로 수정해주세요.
-            // http://localhost:9000/cart/edit/100?quantity=10
-            const url = `${API_BASE_URL}/cart/edit/${cartProductId}?quantity=${quantity}`;
-
-            // patch 동작은 전체가 아닌 일부 데이터를 변경하고자 할때 사용됩니다.
-            // 스플링의 WebConfig 클래스안의 addCorsMappings() 메소드를 참조하시길 바랍니다.
-            const response = await axios.patch(url);
-
-            console.log(response.data || ``);
-
-            // cartProducts의 수량 정보를 갱신합니다.
-            setCartProducts((previous) => {
-                const updatedProducts = previous.map((product) =>
-                    product.cartProductId === cartProductId
-                        ? { ...product, quantity: quantity }
-                        : product
-                );
-
-                refreshOrderTotalPrice(updatedProducts);
-                return updatedProducts;
-            });
-
-        } catch (error) {
-            console.log('카트 상품 수량 변경 실패');
-            console.log(error);
-        }
-    };
-
     return (
         <Container className="mt-4">
             <h2 className="mb-4">
@@ -150,12 +53,10 @@ function App({ user }) {
                 <thead>
                     <tr>
                         <th style={thStyle}>
-                            {/* `전체 선택` 체크 박스의 체크 상태(boolean)를 toggleAllCheckBox 함수에 전달 */}
                             <Form.Check
                                 type="checkbox"
                                 label="전체 선택"
-                                style={{ transform: "scale(1.1)", cursor: "pointer" }}
-                                onChange={(event) => toggleAllCheckBox(event.target.checked)}
+                                onChange={``}
                             />
                         </th>
                         <th style={thStyle}>상품 정보</th>
@@ -167,14 +68,12 @@ function App({ user }) {
                 <tbody>
                     {cartProducts.length > 0 ? (
                         cartProducts.map((product) => (
-                            <tr key={product.cartProductId}>
+                            <tr key={product.cartProducts}>
                                 <td className="text-center align-middle">
-                                    {/* 어떤 체크인지 식별하기 위하여 toggleCheckBox 함수에 cartProductId를 넘기도록 합니다. */}
                                     <Form.Check
                                         type="checkbox"
                                         checked={product.checked}
-                                        style={{ transform: "scale(1.4)", cursor: "pointer" }}
-                                        onChange={() => toggleCheckBox(product.cartProductId)}
+                                        onChange={``}
                                     />
                                 </td>
                                 <td className="text-center align-middle">
@@ -198,22 +97,18 @@ function App({ user }) {
                                         type="number"
                                         min={1}
                                         value={product.quantity}
-                                        onChange={(event) =>
-                                            changeQuantity(
-                                                product.cartProductId,
-                                                parseInt(event.target.value)
-                                            )}
+                                        onChange={``}
                                         style={{ width: '80px', margin: '0 auto' }}
                                     />
                                 </td>
                                 <td className="text-center align-middle">
-                                    {(product.price * product.quantity).toLocaleString()}원
+                                    {(product.price * product.quantity).toLocaleString}원
                                 </td>
                                 <td className="text-center align-middle">
                                     <Button variant="danger" size="sm"
                                         onClick={``}
                                     >
-                                        삭제
+                                        식제
                                     </Button>
                                 </td>
                             </tr>
@@ -223,9 +118,8 @@ function App({ user }) {
                     )}
                 </tbody>
             </Table>
-
             {/* 좌측 정령(text-start), 가운데 정령(text-center), 우측 정령(text-end)*/}
-            <h3 className="text-end mt-3">총 주문 금액 : {orderTotalPrice.toLocaleString()}원</h3>
+            <h3 className="text-end mt-3">총 주문 금액 : 0원</h3>
             <div className="text-end">
                 <Button variant="primary" size="lg" onClick={``}>
                     주문하기
