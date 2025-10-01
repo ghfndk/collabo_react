@@ -1,45 +1,133 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Container } from "react-bootstrap";
+import { Alert, Button, Card, Col, Container, Row, Spinner } from "react-bootstrap";
 import { API_BASE_URL } from "../config/config";
 import { useNavigate } from "react-router-dom";
 
 
-function App({ user }) {
 
-    const [orders, setOtders] = useState([]);
+function App({ user }) {
+    // loading이 true이면 현재 데이터를 읽고 있는 중입니다.
+    const [loading, setLoading] = useState(true);
+
+    // 오류 정보를 저장할 스테이트
+    const [error, setError] = useState(``);
+
+    // 주문 목록들을 저장할 스테이트(초기 값 : 빈 배열)
+    const [orders, setOrders] = useState([]);
+
+    // 다음의 hook은 사용자(user) 정보가 변경될 떄 마다 rendering 됩니다.
+    useEffect(() => {
+        if (!user) {
+            setError('로그인이 필요합니다.');
+            setLoading(false);
+        }
+
+        // 스프링 부트의 OrdreControlloer의 getOrderList() 메소드 참조
+        const fetchOrders = async () => {
+            try {
+                const url = `${API_BASE_URL}/order/list`;
+                // get 방식은 파라미터를 넘길 때 , params라는 키를 사용하여 넘겨야 합니다.
+                // 여기서 role는 관리자 유무를 판단하기 위하여 넘겨 줍니다.
+                const parameters = { params: { memberId: user.id, role: user.role } };
+                const response = await axios.get(url, parameters);
+                setOrders(response.data);
+            } catch (error) {
+                setError('주문 목록을 불러 오는데 실패하였습니다');
+                console.log(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOrders(); // 함수 호출
+    }, [user]);
 
     const navigate = useNavigate();
 
-    // 사용자가 바뀔떄마다 갱신
-    useEffect(() => {
-        if (user && user?.id) {
-            fetchOrdertProducts();
-        }
-    }, [user]);
-
-    const fetchOrdertProducts = async () => {
-        try {
-            const url = `${API_BASE_URL}/order/list/${user.id}`;
-            const response = await axios.get(url);
-            console.log('주문 내역 조회');
-            console.log(response.data);
-
-        } catch (error) {
-            console.log('주문 내역 조회 오류 :', error);
-            alert('주문 내역이 없어 상품 목록으로 이동합니다');
-            navigate('/product/list');
-        }
+    const deleteOrder = (deletedId)=>{
+        alert(`삭제할 주문 번호 : ${deletedId}`);
     };
 
+    // 관리자를 위한 컴포넌트, 함수
+    const makeAdminBUtton = (bean) => {
+        if (user?.role !== "ADMIN") return null;
+
+        return (
+            <div>
+                <Button
+                    variant="warning"
+                    size="sm"
+                    className="me-2"
+                    onClick={()=> navigate(`${API_BASE_URL}/order/update/${bean.orderId}`)}
+                >
+                    수정
+                </Button>
+                <Button
+                    variant="danger"
+                    size="sm"
+                    className="me-2"
+                    onClick={()=> deleteOrder(bean.orderId)}
+                >
+                    삭제
+                </Button>
+            </div>
+        );
+    };
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center p-5">
+                <Spinner animation="border" role="status">
+                    <span className="visually-hidden">주문 목록을 불러오는 중입니다.</span>
+                </Spinner>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <Container className="my-4">
+                <Alert variant="danger">{error}</Alert>
+            </Container>
+        );
+    }
 
     return (
-        <Container className="mt-4">
-            <h2 className="mb-4">
-                {/* xxrem은 주위 글꼴의 xx배를 의미합니다 */}
-                <span style={{ color: 'blue', fontSize: '2rem' }}>{user?.name}</span>
-                <span style={{ fontSize: '1.3rem' }}>님의 주문 내역</span>
-            </h2>
+        <Container className="my-4">
+            <h1 className="my-4">주문 내역</h1>
+            {orders.length === 0 ? (
+                <Alert variant="secondary">주문 내역이 없습니다.</Alert>
+            ) : (
+                <Row>
+                    {orders.map((bean) => (
+                        <Col key={bean.orderId} md={6} className="mb-4">
+                            <Card className="h-100 shadow=sm">
+                                <Card.Body>
+                                    <div className="d-flex justify-content-between">
+                                        <Card.Title>주문 번호 : {bean.orderId}</Card.Title>
+                                        <small className="text-muted">{bean.orderDate}</small>
+                                    </div>
+
+                                    <Card.Text>
+                                        상태 : <strong> {bean.status}</strong>
+                                    </Card.Text>
+
+                                    <ul style={{ paddingLeft: "20px" }}>
+                                        {bean.orderItems.map((item, index) => (
+                                            <li key={index}>
+                                                {item.productName}({item.quantity}개)
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    {/* 관리자 전용 버튼 생성 */}
+                                    {makeAdminBUtton(bean)}
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    ))}
+                </Row>
+            )}
         </Container>
     );
 }

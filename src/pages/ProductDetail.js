@@ -132,7 +132,7 @@ function App({ user }) {
             alert(`${product.name} ${quantity} 개를 주문하였습니다`);
 
             navigate('/product/list'); // 목록 페이지로 이동
-        
+
         } catch (error) {
             console.log('주문 기능 실패');
             console.log(error);
